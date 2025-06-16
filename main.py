@@ -2,12 +2,18 @@ import cv2
 import numpy as np
 import os
 from maosModulo import MaosDetector
-import time
+from ia import Keras
 
 # Instancia o detector de maos
 detector = MaosDetector()
 
+imagens = []
+labels = []
+
+i = 0
 for pasta in os.listdir("fotos"):
+    
+    
     for arquivo in os.listdir(f"fotos/{pasta}"):
         caminho = f"fotos/{pasta}/{arquivo}"
             
@@ -24,8 +30,25 @@ for pasta in os.listdir("fotos"):
         lmList = detector.encontrarPosicao(img, draw=False)
         
         if len(lmList) > 0:
-            print(lmList)
+            # Pega os valores dos pontos
+            imagens.append(lmList)
+            # Pega a letra, transforma em ascci e dimini por 96 para ficar entre 1 a 25
+            labels.append(int(ord(pasta)) - 96)
+                
+            
         
         # Mostra a imagem e espera 1000ms
         cv2.imshow("Img", img)
-        cv2.waitKey(1000)
+        cv2.waitKey(1)
+    
+    i += 1
+    
+imagens = np.array(imagens)
+labels = np.array(labels)
+
+keras = Keras()
+keras.treinar(img=imagens, label=labels)
+
+keras.instanciar(imagens[7])
+print(labels[7])
+
