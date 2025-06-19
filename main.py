@@ -48,6 +48,7 @@ labels = np.array(labels)
 
 keras = Keras()
 keras.treinar(img=imagens, label=labels)
+keras.crossVal(img=imagens, label=labels, n_splits=5, epochs=10)
 
 keras.instanciar(imagens[7])
 print(labels[7])
