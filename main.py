@@ -1,55 +1,33 @@
 import cv2
-import numpy as np
-import os
 from maosModulo import MaosDetector
 from ia import Keras
+import time
 
-# Instancia o detector de maos
+lCam = 640
+aCam = 480
+
+
+cam = cv2.VideoCapture(0)
+cam.set(3, lCam)
+cam.set(4, aCam)
+pTempo = 0
+
 detector = MaosDetector()
-
-imagens = []
-labels = []
-
-i = 0
-for pasta in os.listdir("fotos"):
-    
-    
-    for arquivo in os.listdir(f"fotos/{pasta}"):
-        caminho = f"fotos/{pasta}/{arquivo}"
-            
-        # Pega a imagem 
-        img = cv2.imread(caminho)
-        
-        # Redimensiona a imagem em 640x480 pixel(4:3)
-        img = cv2.resize(img, (640, 480))
-        
-        # Procura as maos na imagem
-        img = detector.encontrarMaos(img)
-        
-        # Procura os valores de cada ponto da imagem e mostra caso a lisata seha maior que 0
-        lmList = detector.encontrarPosicao(img, draw=False)
-        
-        if len(lmList) > 0:
-            # Pega os valores dos pontos
-            imagens.append(lmList)
-            # Pega a letra, transforma em ascci e dimini por 96 para ficar entre 1 a 25
-            labels.append(int(ord(pasta)) - 96)
-                
-            
-        
-        # Mostra a imagem e espera 1000ms
-        cv2.imshow("Img", img)
-        cv2.waitKey(1)
-    
-    i += 1
-    
-imagens = np.array(imagens)
-labels = np.array(labels)
-
 keras = Keras()
-keras.treinar(img=imagens, label=labels)
-keras.crossVal(img=imagens, label=labels, n_splits=5, epochs=10)
 
-keras.instanciar(imagens[7])
-print(labels[7])
-
+while True:
+    success, img = cam.read()
+    img = detector.encontrarMaos(img, draw=False)
+    lmList = detector.encontrarPosicao(img, draw=False)
+    
+    if len(lmList) > 0:
+        letra = keras.instanciar(lmList)
+        cv2.putText(img, f"Letra: {letra}", (40, 70), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 3)
+    
+    
+    cTempo = time.time()
+    fps = 1/(cTempo-pTempo)
+    pTempo = cTempo
+    
+    cv2.imshow("Img", img)
+    cv2.waitKey(10)
